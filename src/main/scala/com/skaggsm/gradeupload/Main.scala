@@ -1,5 +1,7 @@
 package com.skaggsm.gradeupload
 
+import com.skaggsm.gradeupload.cli.GuiceFactory
+import okhttp3.OkHttpClient
 import picocli.CommandLine
 
 /**
@@ -7,6 +9,11 @@ import picocli.CommandLine
   */
 object Main {
   def main(args: Array[String]): Unit = {
-    CommandLine.run(new HelloWorldCommand, args: _*)
+    val factory = new GuiceFactory
+
+    CommandLine.run(classOf[GradeCommand], factory, args: _*)
+
+    val client = factory.injector.getInstance(classOf[OkHttpClient])
+    client.dispatcher().executorService().shutdown()
   }
 }

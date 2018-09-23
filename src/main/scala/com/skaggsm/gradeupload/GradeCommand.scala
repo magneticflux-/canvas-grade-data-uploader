@@ -8,11 +8,11 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
 import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.inject.Inject
+import com.skaggsm.gradeupload.canvas.CanvasService
+import com.skaggsm.gradeupload.cli.OptionTypeConverter
 import org.apache.pdfbox.pdmodel.PDDocument
 import picocli.CommandLine.{Command, Parameters, Option => CommandOption}
-import retrofit2.Retrofit
-import retrofit2.adapter.scala.ScalaCallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
@@ -29,7 +29,7 @@ import scala.util.Try
   version = Array("0.1.0"),
   showDefaultValues = true,
 )
-class HelloWorldCommand extends Runnable {
+class GradeCommand @Inject()(val service: CanvasService) extends Runnable {
 
   @CommandOption(
     names = Array("-t", "--token"),
@@ -80,16 +80,11 @@ class HelloWorldCommand extends Runnable {
 
       println(s"Searching for student id by login id '$studentName'...")
 
-      // Inject Retrofit and OkHttp properly
-      val service = new Retrofit.Builder()
-        .baseUrl("https://mst.instructure.com")
-        .addCallAdapterFactory(ScalaCallAdapterFactory.create())
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(classOf[CanvasService])
+      val user = Await.result(service.searchForUser(s"Bearer $oAuth2Token", studentName), Duration("10s"))
 
+      println(s"Found id: $user")
 
-      println("Found id: " + Await.result(service.searchForUser(s"Bearer $oAuth2Token", studentName), Duration("10s")))
+      println(s"Loading PDF for $studentName")
 
       val pdfPath = dir.resolve(s"${studentName}_submit_submission.pdf")
 
@@ -108,7 +103,7 @@ class HelloWorldCommand extends Runnable {
 
       val grade = 100 + pointModifiers
 
-      println(s"Determined grade for $studentName = $grade")
+      println(s"Determined grade for $studentName is $grade/100")
     }
   }
 }

@@ -1,6 +1,6 @@
-package com.skaggsm.gradeupload
+package com.skaggsm.gradeupload.canvas
 
-import retrofit2.http._
+import retrofit2.http.{GET, Header, Query}
 
 import scala.concurrent.Future
 
