@@ -38,6 +38,13 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
   )
   var providedOAuth2Token: Option[String] = None
 
+  @CommandOption(
+    names = Array("-a", "--assignment"),
+    required = true,
+    arity = "1"
+  )
+  var assignmentId: Int = _
+
   @Parameters(
     paramLabel = "PATH",
     arity = "0..1",
@@ -60,6 +67,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
       )
         //.setScopes(List("url:PUT|/api/v1/courses/:course_id/assignments/:assignment_id/submissions/:user_id").asJava)
         .build
+
       // authorize
       val receiver = new LocalServerReceiver.Builder().setHost("localhost").setPort(8080).build
 
@@ -67,6 +75,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
       cred.getAccessToken
     })
+    val tokenHeader = s"Bearer $oAuth2Token"
 
     println(s"Token: $oAuth2Token")
 
@@ -80,7 +89,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
       println(s"Searching for student id by login id '$studentName'...")
 
-      val user = Await.result(service.searchForUser(s"Bearer $oAuth2Token", studentName), Duration("10s"))
+      val user = Await.result(service.searchForUser(tokenHeader, studentName), Duration("10s")).head
 
       println(s"Found id: $user")
 
@@ -104,6 +113,10 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
       val grade = 100 + pointModifiers
 
       println(s"Determined grade for $studentName is $grade/100")
+
+      val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), Duration("10s"))
+
+      println(s"Submission: $submission")
     }
   }
 }

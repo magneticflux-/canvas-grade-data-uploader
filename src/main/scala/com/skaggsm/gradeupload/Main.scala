@@ -12,10 +12,13 @@ object Main {
   def main(args: Array[String]): Unit = {
     val factory = new GuiceFactory
 
-    CommandLine.run(classOf[MainCommand], factory, args: _*)
-
-    // Required because of https://github.com/square/okhttp/issues/4029
-    val client = factory.injector.getInstance(classOf[OkHttpClient])
-    client.dispatcher().executorService().shutdown()
+    try {
+      CommandLine.run(classOf[MainCommand], factory, args: _*)
+    }
+    finally {
+      // Required because of https://github.com/square/okhttp/issues/4029
+      val client = factory.injector.getInstance(classOf[OkHttpClient])
+      client.dispatcher().executorService().shutdown()
+    }
   }
 }
