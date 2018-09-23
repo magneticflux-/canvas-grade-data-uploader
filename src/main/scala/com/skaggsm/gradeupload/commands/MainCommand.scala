@@ -1,4 +1,4 @@
-package com.skaggsm.gradeupload
+package com.skaggsm.gradeupload.commands
 
 import java.nio.file.{FileVisitOption, Files, Path}
 
@@ -29,7 +29,7 @@ import scala.util.Try
   version = Array("0.1.0"),
   showDefaultValues = true,
 )
-class GradeCommand @Inject()(val service: CanvasService) extends Runnable {
+class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
   @CommandOption(
     names = Array("-t", "--token"),

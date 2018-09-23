@@ -10,7 +10,7 @@ import retrofit2.Retrofit
 /**
   * Created by Mitchell Skaggs on 9/22/2018.
   */
-class GradeCommandModule extends AbstractModule with ScalaModule {
+class MainCommandModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
     bind[Cache].toProvider[OkHttpCacheProvider]
     bind[OkHttpClient].toProvider[OkHttpProvider].in[Singleton]
