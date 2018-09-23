@@ -102,21 +102,35 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
       val annotations = pdf.getPages.asScala.flatMap(_.getAnnotations.asScala).toSeq
 
-      val pointModifiers = annotations
+      val commentLines = annotations
         .filter(_.getContents != null)
         .flatMap(_.getContents.replace('\r', '\n').lines)
-        .flatMap(l => {
-          Try(l.toDouble).toOption
-        })
-        .sum
+        .filter(_.nonEmpty)
 
-      val grade = 100 + pointModifiers
+      if (commentLines.isEmpty) {
+        println("No comments found, assuming ungraded.")
+      }
+      else {
+        val pointModifiers = commentLines
+          .flatMap(l => {
+            Try(l.toDouble).toOption
+          })
+          .sum
 
-      println(s"Determined grade for $studentName is $grade/100")
+        val grade = 100 + pointModifiers
 
-      val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), Duration("10s"))
+        println(s"Determined grade for $studentName is $grade/100")
 
-      println(s"Submission: $submission")
+        val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), Duration("10s"))
+
+        if (submission.submissionComments.nonEmpty) {
+          println(s"Submission already has at least one comment, skipping to avoid duplicates.")
+        }
+        else {
+          println(s"Assigning grade of $grade to $studentName")
+
+        }
+      }
     }
   }
 }
