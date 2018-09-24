@@ -1,4 +1,4 @@
-package com.skaggsm.gradeupload
+package com.skaggsm.gradeupload.cli
 
 import picocli.CommandLine.ITypeConverter
 
