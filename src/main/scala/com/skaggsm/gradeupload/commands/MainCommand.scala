@@ -40,6 +40,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
     defaultValue = "10s"
   )
   var timeout: Duration = _
+
   @CommandOption(
     names = Array("-t", "--token"),
     arity = "0..1",
@@ -47,12 +48,14 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
     converter = Array(classOf[OptionTypeConverter])
   )
   var providedOAuth2Token: Option[String] = _
+
   @CommandOption(
     names = Array("-a", "--assignment"),
     required = true,
     arity = "1"
   )
   var assignmentId: Int = _
+
   @Parameters(
     paramLabel = "PATH",
     arity = "0..1",
@@ -117,7 +120,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         .filter(_.nonEmpty)
 
       if (commentLines.isEmpty) {
-        println("No comments found, assuming ungraded.\n")
+        println("No PDF comments found, assuming ungraded.\n")
       }
       else {
         val pointModifiers = commentLines
@@ -133,7 +136,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), timeout)
 
         if (submission.submissionComments.nonEmpty) {
-          println(s"Submission already has at least one comment, skipping to avoid duplicates.\n")
+          println(s"Submission already has at least one Canvas comment, skipping to avoid duplicates.\n")
         }
         else {
           println(s"Assigning grade of $grade to $studentName")
@@ -142,7 +145,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
           println(s"Grade is now ${newSubmission.score}")
 
-          println(s"Uploading comments for $studentName")
+          println(s"Uploading PDF with comments for $studentName")
 
           val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, assignmentId, user.id, pdfName), timeout)
 
@@ -160,7 +163,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
           val commentedSubmission = Await.result(service.addComment(tokenHeader, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
 
-          println(s"Submission now has ${commentedSubmission.submissionComments.length} comment(s)\n")
+          println(s"Submission now has ${commentedSubmission.submissionComments.length} Canvas comment(s)\n")
         }
       }
     }
