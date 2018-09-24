@@ -85,7 +85,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
     })
     val tokenHeader = s"Bearer $oAuth2Token"
 
-    println(s"Token: $oAuth2Token")
+    println(s"Token: $oAuth2Token\n")
 
     val subdirectories = Files.walk(path, 1, FileVisitOption.FOLLOW_LINKS)
       .iterator().asScala.toSeq
@@ -117,7 +117,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         .filter(_.nonEmpty)
 
       if (commentLines.isEmpty) {
-        println("No comments found, assuming ungraded.")
+        println("No comments found, assuming ungraded.\n")
       }
       else {
         val pointModifiers = commentLines
@@ -133,18 +133,18 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), timeout)
 
         if (submission.submissionComments.nonEmpty) {
-          println(s"Submission already has at least one comment, skipping to avoid duplicates.")
+          println(s"Submission already has at least one comment, skipping to avoid duplicates.\n")
         }
         else {
           println(s"Assigning grade of $grade to $studentName")
 
           val newSubmission = Await.result(service.setGrade(tokenHeader, assignmentId, user.id, grade.toString), timeout)
 
+          println(s"Grade is now ${newSubmission.score}")
+
           println(s"Uploading comments for $studentName")
 
           val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, assignmentId, user.id, pdfName), timeout)
-
-          println(fileUploadPendingState)
 
           val fileUploadConfirmState = Await.result(
             service.uploadFileToCanvas(
@@ -158,9 +158,9 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
               RequestBody.create(MultipartBody.FORM, pdfPath.toFile)),
             timeout)
 
-          println(fileUploadConfirmState)
+          val commentedSubmission = Await.result(service.addComment(tokenHeader, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
 
-          return
+          println(s"Submission now has ${commentedSubmission.submissionComments.length} comment(s)\n")
         }
       }
     }

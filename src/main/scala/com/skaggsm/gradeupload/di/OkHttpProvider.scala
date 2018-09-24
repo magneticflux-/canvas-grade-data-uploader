@@ -8,8 +8,8 @@ import okhttp3._
   */
 class OkHttpProvider @Inject()(val cache: Cache) extends Provider[OkHttpClient] {
   override def get(): OkHttpClient = {
-    println("New OkHttpClient!")
     new OkHttpClient.Builder()
+      //.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
       .cache(cache)
       .build()
   }

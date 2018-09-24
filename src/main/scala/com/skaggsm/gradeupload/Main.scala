@@ -12,6 +12,9 @@ object Main {
   def main(args: Array[String]): Unit = {
     val factory = new GuiceFactory
 
+    // To get rid of error
+    System.setProperty("sun.java2d.cmm", "sun.java2d.cmm.kcms.KcmsServiceProvider")
+
     try {
       CommandLine.run(classOf[MainCommand], factory, args: _*)
     }

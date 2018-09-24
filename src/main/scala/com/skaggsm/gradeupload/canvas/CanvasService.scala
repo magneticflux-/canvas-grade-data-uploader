@@ -27,4 +27,7 @@ trait CanvasService {
   @Multipart
   @POST
   def uploadFileToCanvas(@Url url: String, @PartMap params: util.Map[String, RequestBody], @Part("file") file: RequestBody): Future[FileUploadFinishedState]
+
+  @PUT("/api/v1/courses/29821/assignments/{assignmentId}/submissions/{userId}")
+  def addComment(@Header("Authorization") auth: String, @Path("assignmentId") assignmentId: Int, @Path("userId") userId: Int, @Query("comment[file_ids][]") fileIds: Array[Int]): Future[Submission]
 }
