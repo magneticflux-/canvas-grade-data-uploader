@@ -10,7 +10,8 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.inject.Inject
 import com.skaggsm.gradeupload.canvas.CanvasService
-import com.skaggsm.gradeupload.cli.OptionTypeConverter
+import com.skaggsm.gradeupload.cli.{DurationTypeConverter, OptionTypeConverter}
+import okhttp3.{MultipartBody, RequestBody}
 import org.apache.pdfbox.pdmodel.PDDocument
 import picocli.CommandLine.{Command, Parameters, Option => CommandOption}
 
@@ -32,19 +33,26 @@ import scala.util.Try
 class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
   @CommandOption(
+    names = Array("--timeout"),
+    arity = "0..1",
+    required = false,
+    converter = Array(classOf[DurationTypeConverter]),
+    defaultValue = "10s"
+  )
+  var timeout: Duration = _
+  @CommandOption(
     names = Array("-t", "--token"),
     arity = "0..1",
+    required = false,
     converter = Array(classOf[OptionTypeConverter])
   )
-  var providedOAuth2Token: Option[String] = None
-
+  var providedOAuth2Token: Option[String] = _
   @CommandOption(
     names = Array("-a", "--assignment"),
     required = true,
     arity = "1"
   )
   var assignmentId: Int = _
-
   @Parameters(
     paramLabel = "PATH",
     arity = "0..1",
@@ -89,13 +97,14 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
       println(s"Searching for student id by login id '$studentName'...")
 
-      val user = Await.result(service.searchForUser(tokenHeader, studentName), Duration("10s")).head
+      val user = Await.result(service.searchForUser(tokenHeader, studentName), timeout).head
 
       println(s"Found id: $user")
 
       println(s"Loading PDF for $studentName")
 
-      val pdfPath = dir.resolve(s"${studentName}_submit_submission.pdf")
+      val pdfName = s"${studentName}_submit_submission.pdf"
+      val pdfPath = dir.resolve(pdfName)
 
       val pdf = PDDocument.load(pdfPath.toFile)
       pdf.close()
@@ -121,7 +130,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
         println(s"Determined grade for $studentName is $grade/100")
 
-        val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), Duration("10s"))
+        val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), timeout)
 
         if (submission.submissionComments.nonEmpty) {
           println(s"Submission already has at least one comment, skipping to avoid duplicates.")
@@ -129,6 +138,29 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         else {
           println(s"Assigning grade of $grade to $studentName")
 
+          val newSubmission = Await.result(service.setGrade(tokenHeader, assignmentId, user.id, grade.toString), timeout)
+
+          println(s"Uploading comments for $studentName")
+
+          val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, assignmentId, user.id, pdfName), timeout)
+
+          println(fileUploadPendingState)
+
+          val fileUploadConfirmState = Await.result(
+            service.uploadFileToCanvas(
+              fileUploadPendingState.uploadUrl,
+              fileUploadPendingState.uploadParams
+                .asScala
+                .mapValues(s => {
+                  RequestBody.create(MultipartBody.FORM, s)
+                })
+                .asJava,
+              RequestBody.create(MultipartBody.FORM, pdfPath.toFile)),
+            timeout)
+
+          println(fileUploadConfirmState)
+
+          return
         }
       }
     }

@@ -16,6 +16,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.12.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.squareup.okhttp3:logging-interceptor:3.11.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.codehaus.mojo:animal-sniffer-annotations:1.14:jar" level="project" />
     <orderEntry type="library" name="sbt: org.checkerframework:checker-compat-qual:2.0.0:jar" level="project" />
     <orderEntry type="library" name="sbt: javax.inject:javax.inject:1:jar" level="project" />
