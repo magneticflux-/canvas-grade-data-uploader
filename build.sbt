@@ -47,8 +47,15 @@ buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
 buildInfoPackage := "build"
 
 // Wix build information
-wixProductId in Windows := "8a873157-adde-44bc-888f-0c638e158b0c"
-wixProductUpgradeId in Windows := "672ed6eb-0c69-42a2-9789-f78ccbe14e9c"
+Windows / wixProductId := "8a873157-adde-44bc-888f-0c638e158b0c"
+Windows / wixProductUpgradeId := "672ed6eb-0c69-42a2-9789-f78ccbe14e9c"
 
 // Debian dependencies
-debianPackageDependencies in Debian := Seq("java8-runtime-headless")
+Debian / debianPackageDependencies := Seq("java8-runtime-headless")
+
+val packageWindows = taskKey[Unit]("Builds packages available to be build on Windows. (Windows, Debian, and Universal)")
+packageWindows := {
+  (Universal / packageBin).value
+  (Windows / packageBin).value
+  (Debian / packageBin).value
+}
