@@ -4,11 +4,19 @@ name := "canvas-grade-data-uploader"
 
 version := "0.1.0"
 
+maintainer := "Mitchell Skaggs <skaggsm333@gmail.com>"
+packageSummary := "Canvas Grade Data Uploader"
+packageDescription := """A CLI to upload grades to Canvas. This program reads in scores from PDFs and then uploads """
+
 scalaVersion := "2.12.6"
 
 enablePlugins(
   JavaAppPackaging,
-  BuildInfoPlugin
+  UniversalPlugin,
+  WindowsPlugin,
+  DebianPlugin,
+  JDebPackaging,
+  BuildInfoPlugin,
 )
 
 resolvers += "jitpack" at "https://jitpack.io"
@@ -34,5 +42,20 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "squants" % "1.3.0",
 )
 
+// Info to be added to a generated class
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
 buildInfoPackage := "build"
+
+// Wix build information
+Windows / wixProductId := "8a873157-adde-44bc-888f-0c638e158b0c"
+Windows / wixProductUpgradeId := "672ed6eb-0c69-42a2-9789-f78ccbe14e9c"
+
+// Debian dependencies
+Debian / debianPackageDependencies := Seq("java8-runtime-headless")
+
+val packageWindows = taskKey[Unit]("Builds packages available to be build on Windows. (Windows, Debian, and Universal)")
+packageWindows := {
+  (Universal / packageBin).value
+  (Windows / packageBin).value
+  (Debian / packageBin).value
+}
