@@ -40,6 +40,11 @@ libraryDependencies ++= Seq(
   "com.google.inject" % "guice" % "4.2.1",
   "net.codingwell" %% "scala-guice" % "4.2.1",
   "org.typelevel" %% "squants" % "1.3.0",
+  "org.scalactic" %% "scalactic" % "3.0.5",
+)
+
+libraryDependencies ++= Seq(
+  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
 )
 
 // Info to be added to a generated class
