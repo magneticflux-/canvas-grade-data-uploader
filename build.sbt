@@ -41,6 +41,10 @@ libraryDependencies ++= Seq(
   "net.codingwell" %% "scala-guice" % "4.2.1",
   "org.typelevel" %% "squants" % "1.3.0",
   "org.scalactic" %% "scalactic" % "3.0.5",
+  "org.apache.logging.log4j" % "log4j-api" % "2.11.1",
+  "org.apache.logging.log4j" % "log4j-core" % "2.11.1",
+  "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
+
 )
 
 libraryDependencies ++= Seq(
