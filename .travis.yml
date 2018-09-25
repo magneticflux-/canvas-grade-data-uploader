@@ -2,6 +2,8 @@ sudo: false
 language: scala
 jdk:
 - oraclejdk8
+scala:
+- 2.12.6
 
 before_cache:
 # Cleanup the cached directories to avoid unnecessary cache updates
