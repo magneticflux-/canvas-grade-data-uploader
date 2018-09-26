@@ -44,7 +44,8 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-api" % "2.11.1",
   "org.apache.logging.log4j" % "log4j-core" % "2.11.1",
   "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
-
+  "org.apache.logging.log4j" % "log4j-web" % "2.11.1",
+  "org.fusesource.jansi" % "jansi" % "1.17.1",
 )
 
 libraryDependencies ++= Seq(
