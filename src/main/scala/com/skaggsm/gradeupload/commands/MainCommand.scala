@@ -73,7 +73,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
         new NetHttpTransport(),
         JacksonFactory.getDefaultInstance,
         new GenericUrl("https://mst.instructure.com/login/oauth2/token"),
-        new ClientParametersAuthentication("ID", "SECRET"),
+        new ClientParametersAuthentication("ID", null /*"SECRET"*/),
         "ID",
         "https://mst.instructure.com/login/oauth2/auth"
       )

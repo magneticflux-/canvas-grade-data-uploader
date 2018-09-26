@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
   "com.squareup.retrofit2" % "converter-gson" % "2.4.0",
   "com.squareup.okhttp3" % "okhttp" % "3.11.0",
   "com.squareup.okhttp3" % "logging-interceptor" % "3.11.0",
-  "com.squareup.okio" % "okio" % "2.0.0",
+  "com.squareup.okio" % "okio" % "2.1.0",
   "com.google.code.gson" % "gson" % "2.8.5",
   "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.4.0",
   "com.google.inject" % "guice" % "4.2.1",
