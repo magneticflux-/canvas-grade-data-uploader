@@ -2,7 +2,7 @@
 
 name := "canvas-grade-data-uploader"
 
-version := "0.1.0"
+version := "0.2.0"
 
 maintainer := "Mitchell Skaggs <skaggsm333@gmail.com>"
 packageSummary := "Canvas Grade Data Uploader"
