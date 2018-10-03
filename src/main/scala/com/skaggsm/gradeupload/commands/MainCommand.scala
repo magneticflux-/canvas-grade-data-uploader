@@ -108,71 +108,76 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
 
       logger.info(s"Searching for student id by login id '$studentName'...")
 
-      val user = Await.result(service.searchForUser(tokenHeader, courseId, studentName), timeout).head
+      val userOption = Await.result(service.searchForUser(tokenHeader, courseId, studentName), timeout).headOption
 
-      logger.info(s"Found id: $user")
+      userOption match {
+        case None =>
+          logger.error(s"Unable to find student id for $studentName!")
+        case Some(user) =>
+          logger.info(s"Found id: $user")
 
-      logger.info(s"Loading PDF for $studentName")
+          logger.info(s"Loading PDF for $studentName")
 
-      val pdfName = s"${studentName}_submit_submission.pdf"
-      val pdfPath = dir.resolve(pdfName)
+          val pdfName = s"${studentName}_submit_submission.pdf"
+          val pdfPath = dir.resolve(pdfName)
 
-      val pdf = PDDocument.load(pdfPath.toFile)
-      pdf.close()
+          val pdf = PDDocument.load(pdfPath.toFile)
+          pdf.close()
 
-      val annotations = pdf.getPages.asScala.flatMap(_.getAnnotations.asScala).toSeq
+          val annotations = pdf.getPages.asScala.flatMap(_.getAnnotations.asScala).toSeq
 
-      val commentLines = annotations
-        .filter(_.getContents != null)
-        .flatMap(_.getContents.replace('\r', '\n').lines)
-        .filter(_.nonEmpty)
+          val commentLines = annotations
+            .filter(_.getContents != null)
+            .flatMap(_.getContents.replace('\r', '\n').lines)
+            .filter(_.nonEmpty)
 
-      if (commentLines.isEmpty) {
-        logger.warn("No PDF comments found, assuming ungraded.")
-      }
-      else {
-        val pointModifiers = commentLines
-          .flatMap(l => {
-            Try(l.toDouble).toOption
-          })
-          .sum
+          if (commentLines.isEmpty) {
+            logger.warn("No PDF comments found, assuming ungraded.")
+          }
+          else {
+            val pointModifiers = commentLines
+              .flatMap(l => {
+                Try(l.toDouble).toOption
+              })
+              .sum
 
-        val grade = 100 + pointModifiers
+            val grade = 100 + pointModifiers
 
-        logger.info(s"Determined grade for $studentName is $grade/100")
+            logger.info(s"Determined grade for $studentName is $grade/100")
 
-        val submission = Await.result(service.getSubmission(tokenHeader, courseId, assignmentId, user.id, Array("submission_comments")), timeout)
+            val submission = Await.result(service.getSubmission(tokenHeader, courseId, assignmentId, user.id, Array("submission_comments")), timeout)
 
-        if (submission.submissionComments.nonEmpty) {
-          logger.warn(s"Submission already has at least one Canvas comment, skipping to avoid duplicates.")
-        }
-        else {
-          logger.info(s"Assigning grade of $grade to $studentName")
+            if (submission.submissionComments.nonEmpty) {
+              logger.warn(s"Submission already has at least one Canvas comment, skipping to avoid duplicates.")
+            }
+            else {
+              logger.info(s"Assigning grade of $grade to $studentName")
 
-          val newSubmission = Await.result(service.setGrade(tokenHeader, courseId, assignmentId, user.id, grade.toString), timeout)
+              val newSubmission = Await.result(service.setGrade(tokenHeader, courseId, assignmentId, user.id, grade.toString), timeout)
 
-          logger.info(s"Grade is now ${newSubmission.score}")
+              logger.info(s"Grade is now ${newSubmission.score}")
 
-          logger.info(s"Uploading PDF with comments for $studentName")
+              logger.info(s"Uploading PDF with comments for $studentName")
 
-          val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, courseId, assignmentId, user.id, pdfName), timeout)
+              val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, courseId, assignmentId, user.id, pdfName), timeout)
 
-          val fileUploadConfirmState = Await.result(
-            service.uploadFileToCanvas(
-              fileUploadPendingState.uploadUrl,
-              fileUploadPendingState.uploadParams
-                .asScala
-                .mapValues(s => {
-                  RequestBody.create(MultipartBody.FORM, s)
-                })
-                .asJava,
-              RequestBody.create(MultipartBody.FORM, pdfPath.toFile)),
-            timeout)
+              val fileUploadConfirmState = Await.result(
+                service.uploadFileToCanvas(
+                  fileUploadPendingState.uploadUrl,
+                  fileUploadPendingState.uploadParams
+                    .asScala
+                    .mapValues(s => {
+                      RequestBody.create(MultipartBody.FORM, s)
+                    })
+                    .asJava,
+                  RequestBody.create(MultipartBody.FORM, pdfPath.toFile)),
+                timeout)
 
-          val commentedSubmission = Await.result(service.addComment(tokenHeader, courseId, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
+              val commentedSubmission = Await.result(service.addComment(tokenHeader, courseId, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
 
-          logger.info(s"Submission now has ${commentedSubmission.submissionComments.length} Canvas comment(s)")
-        }
+              logger.info(s"Submission now has ${commentedSubmission.submissionComments.length} Canvas comment(s)")
+            }
+          }
       }
     }
   }
