@@ -57,6 +57,13 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
   )
   var assignmentId: Int = _
 
+  @CommandOption(
+    names = Array("-c", "--course"),
+    required = true,
+    arity = "1"
+  )
+  var courseId: Int = _
+
   @Parameters(
     paramLabel = "PATH",
     arity = "0..1",
