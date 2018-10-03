@@ -12,6 +12,7 @@ import com.google.inject.Inject
 import com.skaggsm.gradeupload.canvas.CanvasService
 import com.skaggsm.gradeupload.cli.{DurationTypeConverter, OptionTypeConverter}
 import okhttp3.{MultipartBody, RequestBody}
+import org.apache.logging.log4j.scala.Logging
 import org.apache.pdfbox.pdmodel.PDDocument
 import picocli.CommandLine.{Command, Parameters, Option => CommandOption}
 
@@ -30,7 +31,7 @@ import scala.util.Try
   version = Array("0.1.0"),
   showDefaultValues = true,
 )
-class MainCommand @Inject()(val service: CanvasService) extends Runnable {
+class MainCommand @Inject()(val service: CanvasService) extends Runnable with Logging {
 
   @CommandOption(
     names = Array("--timeout"),
@@ -47,7 +48,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
     required = false,
     converter = Array(classOf[OptionTypeConverter])
   )
-  var providedOAuth2Token: Option[String] = _
+  var providedOAuth2Token: Option[String] = None
 
   @CommandOption(
     names = Array("-a", "--assignment"),
@@ -72,7 +73,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         new NetHttpTransport(),
         JacksonFactory.getDefaultInstance,
         new GenericUrl("https://mst.instructure.com/login/oauth2/token"),
-        new ClientParametersAuthentication("ID", "SECRET"),
+        new ClientParametersAuthentication("ID", null /*"SECRET"*/),
         "ID",
         "https://mst.instructure.com/login/oauth2/auth"
       )
@@ -88,7 +89,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
     })
     val tokenHeader = s"Bearer $oAuth2Token"
 
-    println(s"Token: $oAuth2Token\n")
+    logger.debug(s"Token: $oAuth2Token")
 
     val subdirectories = Files.walk(path, 1, FileVisitOption.FOLLOW_LINKS)
       .iterator().asScala.toSeq
@@ -98,13 +99,13 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
     for (dir <- subdirectories) {
       val studentName = dir.getName(dir.getNameCount - 1).toString.split("_").head
 
-      println(s"Searching for student id by login id '$studentName'...")
+      logger.info(s"Searching for student id by login id '$studentName'...")
 
       val user = Await.result(service.searchForUser(tokenHeader, studentName), timeout).head
 
-      println(s"Found id: $user")
+      logger.info(s"Found id: $user")
 
-      println(s"Loading PDF for $studentName")
+      logger.info(s"Loading PDF for $studentName")
 
       val pdfName = s"${studentName}_submit_submission.pdf"
       val pdfPath = dir.resolve(pdfName)
@@ -120,7 +121,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
         .filter(_.nonEmpty)
 
       if (commentLines.isEmpty) {
-        println("No PDF comments found, assuming ungraded.\n")
+        logger.warn("No PDF comments found, assuming ungraded.")
       }
       else {
         val pointModifiers = commentLines
@@ -131,21 +132,21 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
         val grade = 100 + pointModifiers
 
-        println(s"Determined grade for $studentName is $grade/100")
+        logger.info(s"Determined grade for $studentName is $grade/100")
 
         val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), timeout)
 
         if (submission.submissionComments.nonEmpty) {
-          println(s"Submission already has at least one Canvas comment, skipping to avoid duplicates.\n")
+          logger.warn(s"Submission already has at least one Canvas comment, skipping to avoid duplicates.")
         }
         else {
-          println(s"Assigning grade of $grade to $studentName")
+          logger.info(s"Assigning grade of $grade to $studentName")
 
           val newSubmission = Await.result(service.setGrade(tokenHeader, assignmentId, user.id, grade.toString), timeout)
 
-          println(s"Grade is now ${newSubmission.score}")
+          logger.info(s"Grade is now ${newSubmission.score}")
 
-          println(s"Uploading PDF with comments for $studentName")
+          logger.info(s"Uploading PDF with comments for $studentName")
 
           val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, assignmentId, user.id, pdfName), timeout)
 
@@ -163,7 +164,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable {
 
           val commentedSubmission = Await.result(service.addComment(tokenHeader, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
 
-          println(s"Submission now has ${commentedSubmission.submissionComments.length} Canvas comment(s)\n")
+          logger.info(s"Submission now has ${commentedSubmission.submissionComments.length} Canvas comment(s)")
         }
       }
     }

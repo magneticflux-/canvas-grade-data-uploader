@@ -34,13 +34,18 @@ libraryDependencies ++= Seq(
   "com.squareup.retrofit2" % "converter-gson" % "2.4.0",
   "com.squareup.okhttp3" % "okhttp" % "3.11.0",
   "com.squareup.okhttp3" % "logging-interceptor" % "3.11.0",
-  "com.squareup.okio" % "okio" % "2.0.0",
+  "com.squareup.okio" % "okio" % "2.1.0",
   "com.google.code.gson" % "gson" % "2.8.5",
   "com.github.sergeygrigorev" %% "gson-object-scala-syntax" % "0.4.0",
   "com.google.inject" % "guice" % "4.2.1",
   "net.codingwell" %% "scala-guice" % "4.2.1",
   "org.typelevel" %% "squants" % "1.3.0",
   "org.scalactic" %% "scalactic" % "3.0.5",
+  "org.apache.logging.log4j" % "log4j-api" % "2.11.1",
+  "org.apache.logging.log4j" % "log4j-core" % "2.11.1",
+  "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
+  "org.apache.logging.log4j" % "log4j-web" % "2.11.1",
+  "org.fusesource.jansi" % "jansi" % "1.17.1",
 )
 
 libraryDependencies ++= Seq(
