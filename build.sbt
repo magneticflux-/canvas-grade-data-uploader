@@ -8,7 +8,7 @@ maintainer := "Mitchell Skaggs <skaggsm333@gmail.com>"
 packageSummary := "Canvas Grade Data Uploader"
 packageDescription := """A CLI to upload grades to Canvas. This program reads in scores from PDFs and then uploads """
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.7"
 
 enablePlugins(
   JavaAppPackaging,
