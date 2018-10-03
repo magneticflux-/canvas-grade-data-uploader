@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaSbtSettings">
-    <option name="customVMEnabled" value="true" />
-    <option name="customVMPath" value="C:\Program Files\Java\jdk1.8.0_152" />
+    <option name="customVMPath" />
     <option name="linkedExternalProjectsSettings">
       <SbtProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -15,6 +14,7 @@
         <option name="resolveSbtClassifiers" value="true" />
         <option name="sbtVersion" value="1.2.3" />
         <option name="useAutoImport" value="true" />
+        <option name="useSbtShell" value="true" />
       </SbtProjectSettings>
     </option>
   </component>
