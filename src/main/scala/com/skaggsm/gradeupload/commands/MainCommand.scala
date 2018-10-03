@@ -108,7 +108,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
 
       logger.info(s"Searching for student id by login id '$studentName'...")
 
-      val user = Await.result(service.searchForUser(tokenHeader, studentName), timeout).head
+      val user = Await.result(service.searchForUser(tokenHeader, courseId, studentName), timeout).head
 
       logger.info(s"Found id: $user")
 
@@ -141,7 +141,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
 
         logger.info(s"Determined grade for $studentName is $grade/100")
 
-        val submission = Await.result(service.getSubmission(tokenHeader, assignmentId, user.id, Array("submission_comments")), timeout)
+        val submission = Await.result(service.getSubmission(tokenHeader, courseId, assignmentId, user.id, Array("submission_comments")), timeout)
 
         if (submission.submissionComments.nonEmpty) {
           logger.warn(s"Submission already has at least one Canvas comment, skipping to avoid duplicates.")
@@ -149,13 +149,13 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
         else {
           logger.info(s"Assigning grade of $grade to $studentName")
 
-          val newSubmission = Await.result(service.setGrade(tokenHeader, assignmentId, user.id, grade.toString), timeout)
+          val newSubmission = Await.result(service.setGrade(tokenHeader, courseId, assignmentId, user.id, grade.toString), timeout)
 
           logger.info(s"Grade is now ${newSubmission.score}")
 
           logger.info(s"Uploading PDF with comments for $studentName")
 
-          val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, assignmentId, user.id, pdfName), timeout)
+          val fileUploadPendingState = Await.result(service.startFileUpload(tokenHeader, courseId, assignmentId, user.id, pdfName), timeout)
 
           val fileUploadConfirmState = Await.result(
             service.uploadFileToCanvas(
@@ -169,7 +169,7 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
               RequestBody.create(MultipartBody.FORM, pdfPath.toFile)),
             timeout)
 
-          val commentedSubmission = Await.result(service.addComment(tokenHeader, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
+          val commentedSubmission = Await.result(service.addComment(tokenHeader, courseId, assignmentId, user.id, Array(fileUploadConfirmState.id)), timeout)
 
           logger.info(s"Submission now has ${commentedSubmission.submissionComments.length} Canvas comment(s)")
         }
