@@ -149,9 +149,13 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
               })
               .sum
 
-            val grade = 100 + pointModifiers
+            val gradeUnclipped = 100 + pointModifiers
+            val grade = math.min(gradeUnclipped, maxScore.getOrElse(Double.MaxValue))
 
             logger.info(s"Determined grade for $studentName is $grade/100")
+
+            if (gradeUnclipped != grade)
+              logger.info(s"Grade reduced from $gradeUnclipped due to max score of ${maxScore.get}")
 
             val submission = Await.result(service.getSubmission(tokenHeader, courseId, assignmentId, user.id, Array("submission_comments")), timeout)
 
