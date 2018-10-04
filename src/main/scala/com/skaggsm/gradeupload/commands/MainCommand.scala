@@ -10,7 +10,7 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.inject.Inject
 import com.skaggsm.gradeupload.canvas.CanvasService
-import com.skaggsm.gradeupload.cli.{DurationTypeConverter, OptionTypeConverter}
+import com.skaggsm.gradeupload.cli.{DoubleOptionTypeConverter, DurationTypeConverter, StringOptionTypeConverter}
 import okhttp3.{MultipartBody, RequestBody}
 import org.apache.logging.log4j.scala.Logging
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -46,9 +46,17 @@ class MainCommand @Inject()(val service: CanvasService) extends Runnable with Lo
     names = Array("-t", "--token"),
     arity = "0..1",
     required = false,
-    converter = Array(classOf[OptionTypeConverter])
+    converter = Array(classOf[StringOptionTypeConverter])
   )
   var providedOAuth2Token: Option[String] = None
+
+  @CommandOption(
+    names = Array("-M", "--max-score"),
+    arity = "0..1",
+    required = false,
+    converter = Array(classOf[DoubleOptionTypeConverter])
+  )
+  var maxScore: Option[Double] = None
 
   @CommandOption(
     names = Array("-a", "--assignment"),
