@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Main (--version)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.skaggsm.gradeupload.Main" />
+    <module name="canvas-grade-data-uploader" />
+    <option name="PROGRAM_PARAMETERS" value="target\universal\stage\bin\grades --version" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.skaggsm.gradeupload.canvas.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -10,7 +10,7 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.inject.Inject
 import com.skaggsm.gradeupload.canvas.CanvasService
-import com.skaggsm.gradeupload.cli.{DoubleOptionTypeConverter, DurationTypeConverter, StringOptionTypeConverter}
+import com.skaggsm.gradeupload.cli.{BuildVersionVersionProvider, DoubleOptionTypeConverter, DurationTypeConverter, StringOptionTypeConverter}
 import okhttp3.{MultipartBody, RequestBody}
 import org.apache.logging.log4j.scala.Logging
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -28,7 +28,7 @@ import scala.util.Try
   description = Array("Prints directories in the provided path."),
   name = "canvas-grade-data-uploader",
   mixinStandardHelpOptions = true,
-  version = Array("0.1.0"),
+  versionProvider = classOf[BuildVersionVersionProvider],
   showDefaultValues = true,
 )
 class MainCommand @Inject()(val service: CanvasService) extends Runnable with Logging {
