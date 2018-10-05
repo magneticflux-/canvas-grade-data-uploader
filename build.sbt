@@ -26,8 +26,8 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies ++= Seq(
   "info.picocli" % "picocli" % "3.6.1",
-  "org.apache.pdfbox" % "pdfbox" % "2.0.11",
-  "org.apache.commons" % "commons-text" % "1.4",
+  "org.apache.pdfbox" % "pdfbox" % "2.0.12",
+  "org.apache.commons" % "commons-text" % "1.5",
   "com.google.oauth-client" % "google-oauth-client" % "1.25.0",
   "com.google.oauth-client" % "google-oauth-client-java6" % "1.25.0",
   "com.google.http-client" % "google-http-client-jackson2" % "1.25.0",
